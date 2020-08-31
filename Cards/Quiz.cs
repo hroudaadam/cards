@@ -40,7 +40,7 @@ namespace Cards
     /// </summary>
     public class Quiz : INotifyPropertyChanged
     {
-        private List<Card> cards = new List<Card>(); // kolekce karet
+        private List<Card> _cards = new List<Card>(); // kolekce karet
         private int _currentCardIndex = 0; // index právě prohlížené karty            
         private string _path;   // cesta k souboru kvízu
         public event PropertyChangedEventHandler PropertyChanged;
@@ -52,12 +52,12 @@ namespace Cards
         {
             get
             {
-                return cards[_currentCardIndex].Question;
+                return _cards[_currentCardIndex].Question;
             }
             set
             {
-                string tmpAnswer = cards[_currentCardIndex].Answer;
-                cards[_currentCardIndex] = new Card(value, tmpAnswer);
+                string tmpAnswer = _cards[_currentCardIndex].Answer;
+                _cards[_currentCardIndex] = new Card(value, tmpAnswer);
             }
         }
 
@@ -68,12 +68,12 @@ namespace Cards
         {
             get
             {
-                return cards[_currentCardIndex].Answer;
+                return _cards[_currentCardIndex].Answer;
             }
             set
             {
-                string tmpQuestion = cards[_currentCardIndex].Question;
-                cards[_currentCardIndex] = new Card(tmpQuestion, value);
+                string tmpQuestion = _cards[_currentCardIndex].Question;
+                _cards[_currentCardIndex] = new Card(tmpQuestion, value);
             }
         }        
 
@@ -91,7 +91,7 @@ namespace Cards
         /// </summary>
         public void NextCard()
         {
-            if (_currentCardIndex >= cards.Count - 1)   // není další karta v kolekci
+            if (_currentCardIndex >= _cards.Count - 1)   // není další karta v kolekci
             {
                 throw new IndexOutOfCardsRangeException("Toto je poslední karta!");
             }
@@ -125,12 +125,12 @@ namespace Cards
         /// </summary>
         public void Import()
         {
-            cards.Clear();
+            _cards.Clear();
 
             using (FileStream fs = new FileStream(_path, FileMode.Open))
             {
                 BinaryFormatter bin = new BinaryFormatter();
-                cards = (List<Card>)bin.Deserialize(fs);
+                _cards = (List<Card>)bin.Deserialize(fs);
             }
 
         }
@@ -148,7 +148,7 @@ namespace Cards
             using (FileStream fs = new FileStream(_path, FileMode.OpenOrCreate))
             {
                 BinaryFormatter bin = new BinaryFormatter();
-                bin.Serialize(fs, cards);
+                bin.Serialize(fs, _cards);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Cards
         /// <returns>True, pokud validace proběhla v přádku. False, pokdu kolekce není validní.</returns>
         private bool ValidateCards()
         {
-            foreach (Card c in cards)
+            foreach (Card c in _cards)
             {
                 if ((c.Question.Trim() == "") || (c.Answer.Trim() == ""))
                 {
@@ -173,7 +173,7 @@ namespace Cards
         /// </summary>
         public void AddNewCard()
         {
-            cards.Add(new Card("", ""));
+            _cards.Add(new Card("", ""));
         }
 
         /// <summary>
@@ -181,17 +181,17 @@ namespace Cards
         /// </summary>
         public void DeleteCurrentCard()
         {            
-            if (cards.Count == 1)   // v kolekci je pouze jedna karta
+            if (_cards.Count == 1)   // v kolekci je pouze jedna karta
             {
                 CurrentCardAnswer = "";
                 CurrentCardQuestion = "";                
             }
             else
             {
-                cards.RemoveAt(_currentCardIndex);
-                if (_currentCardIndex >= cards.Count) // pokud byla karta poslední, snížit index
+                _cards.RemoveAt(_currentCardIndex);
+                if (_currentCardIndex >= _cards.Count) // pokud byla karta poslední, snížit index
                 {
-                    _currentCardIndex = cards.Count - 1;
+                    _currentCardIndex = _cards.Count - 1;
                 }
             }
             CallChange("CurrentCardAnswer");
